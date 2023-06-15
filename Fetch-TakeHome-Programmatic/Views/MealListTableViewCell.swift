@@ -55,9 +55,9 @@ class MealListTableViewCell: UITableViewCell {
     public func configureCell(with mealData: MealDataModel) {
         mealNameLabel.text = mealData.mealName
         if let thumbnailURL = URL(string: mealData.mealThumbnail) {
-            mealThumbnail.load(url: thumbnailURL, placeholder: UIImage(named: "DessertPlaceholder"))
+            mealThumbnail.load(url: thumbnailURL, placeholder: UIImage(named: "Cupcake"))
         } else {
-            mealThumbnail.image = UIImage(named: "DessertPlaceholder")
+            mealThumbnail.image = UIImage(named: "Cupcake")
         }
     }
     
