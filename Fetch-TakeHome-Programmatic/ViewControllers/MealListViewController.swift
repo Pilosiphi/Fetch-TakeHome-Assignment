@@ -49,9 +49,15 @@ class MealListViewController: BaseViewController {
     func retrieveMealList() {
         let mealListDataRequest = MealAPI.sharedInstance.createMealListRequest(category: "Dessert")
         MealAPI.sharedInstance.getMealListData(with: mealListDataRequest) { [weak self] (data, error) in
-            guard let weakSelf = self,
-                  let mealListData = data as? MealListDataModel else {
-                //TODO:Add Error notification logic here.
+            guard let weakSelf = self else { return }
+            
+            guard let mealListData = data as? MealListDataModel else {
+                if let mealError = error as? BaseError {
+                    weakSelf.displayAlertErrorMessage(with: mealError)
+                } else {
+                    let mealError = BaseError(errorTitle: "Meal Detail Error", errorMessage: "Failed to retrieve meal list, restart the application and try again.")
+                    weakSelf.displayAlertErrorMessage(with: mealError)
+                }
                 return
                 
             }
@@ -72,7 +78,12 @@ class MealListViewController: BaseViewController {
                 DispatchQueue.main.async {
                     weakSelf.dismiss(animated: true)
                 }
-                //TODO: Display error message here.
+                if let mealError = error as? BaseError {
+                    weakSelf.displayAlertErrorMessage(with: mealError)
+                } else {
+                    let mealError = BaseError(errorTitle: "Meal Detail Error", errorMessage: "Failed to retrieve meal detail, please try again later.")
+                    weakSelf.displayAlertErrorMessage(with: mealError)
+                }
                 return
             }
             
@@ -123,29 +134,3 @@ extension MealListViewController: UITableViewDataSource {
         return mealTableViewCell
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

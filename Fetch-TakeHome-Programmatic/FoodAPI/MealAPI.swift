@@ -13,16 +13,10 @@ class MealAPI: NSObject {
     
     
     public func createMealListRequest(category: String) -> MealAPIProtocol {
-        if (category.isEmpty) {
-            //TODO: Error messaging
-        }
         return MealListRequest(mealCategory: category)
     }
     
     public func createMealDetailRequest(mealID: String) -> MealAPIProtocol {
-        if (mealID.isEmpty) {
-            //TODO: Error messaging
-        }
         return MealDetailRequest(mealID: mealID)
     }
     
