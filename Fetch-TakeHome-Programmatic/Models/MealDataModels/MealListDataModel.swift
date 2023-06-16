@@ -39,7 +39,11 @@ class MealListDataModel {
             let currentMeal = MealDataModel(mealName: mealName, mealThumbnail: mealThumbnail, mealID: mealID)
             mealList.append(currentMeal)
         }
-        return mealList
+        
+        let sortedMealList = mealList.sorted { (left: MealDataModel, right: MealDataModel) -> Bool in
+            return left.mealName.compare(right.mealName, options: .caseInsensitive) == .orderedAscending
+        }
+        return sortedMealList
     }
     
 }
