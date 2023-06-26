@@ -48,48 +48,40 @@ class MealListViewController: BaseViewController {
     
     func retrieveMealList() {
         let mealListDataRequest = MealAPI.sharedInstance.createMealListRequest(category: "Dessert")
-        MealAPI.sharedInstance.getMealListData(with: mealListDataRequest) { [weak self] (data, error) in
-            guard let weakSelf = self else { return }
-            
-            guard let mealListData = data as? MealListDataModel else {
-                if let mealError = error as? BaseError {
-                    weakSelf.displayAlertErrorMessage(with: mealError)
-                } else {
-                    let mealError = BaseError(errorTitle: "Meal Detail Error", errorMessage: "Failed to retrieve meal list, restart the application and try again.")
-                    weakSelf.displayAlertErrorMessage(with: mealError)
+        
+        Task {
+            do {
+                mealList = try await MealAPI.sharedInstance.mealListData(with: mealListDataRequest).mealList
+                DispatchQueue.main.async { [weak self] in
+                    guard let weakSelf = self else { return }
+                    weakSelf.tableView.reloadData()
                 }
-                return
-                
-            }
-
-            weakSelf.mealList = mealListData.mealList
-            DispatchQueue.main.async {
-                weakSelf.tableView.reloadData()
+            } catch let error as BaseError {
+                DispatchQueue.main.async { [weak self] in
+                    guard let weakSelf = self else { return }
+                    weakSelf.displayAlertErrorMessage(with: error)
+                }
             }
         }
     }
     
     func retrieveMealDetailedInfo(withMeal meal: MealDataModel) {
         let mealDetailRequest = MealAPI.sharedInstance.createMealDetailRequest(mealID: meal.mealID)
-        MealAPI.sharedInstance.getMealDetailData(with: mealDetailRequest) { [weak self] (data, error) in
-            guard let weakSelf = self else { return }
-            
-            guard let mealDetailData = data as? MealDetailedInfoDataModel else {
-                DispatchQueue.main.async {
-                    weakSelf.dismiss(animated: true)
+        Task {
+            do {
+                let mealDetailModel = try await MealAPI.sharedInstance.mealDetailData(with: mealDetailRequest)
+                DispatchQueue.main.async { [weak self] in
+                    guard let weakSelf = self else { return }
+                    weakSelf.loadingVC.dismiss(animated: true) {
+                        weakSelf.transitionToMealDetailViewController(withMeal: mealDetailModel)
+                    }
                 }
-                if let mealError = error as? BaseError {
-                    weakSelf.displayAlertErrorMessage(with: mealError)
-                } else {
-                    let mealError = BaseError(errorTitle: "Meal Detail Error", errorMessage: "Failed to retrieve meal detail, please try again later.")
-                    weakSelf.displayAlertErrorMessage(with: mealError)
-                }
-                return
-            }
-            
-            DispatchQueue.main.async {
-                weakSelf.loadingVC.dismiss(animated: true) {
-                    weakSelf.transitionToMealDetailViewController(withMeal: mealDetailData)
+            } catch let error as BaseError {
+                DispatchQueue.main.async { [weak self] in
+                    guard let weakSelf = self else { return }
+                    weakSelf.loadingVC.dismiss(animated: true) {
+                        weakSelf.displayAlertErrorMessage(with: error)
+                    }
                 }
             }
         }
